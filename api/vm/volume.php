@@ -106,7 +106,7 @@ function cloneVolume($template_name, $volume_name, $new_volume_name)
     global $lv;
     $destFilePath = '/var/lib/libvirt/images/';
     $originFilePath = $destFilePath;
-    $logFilePath = getcwd().DIRECTORY_SEPARATOR;
+    $logFilePath = dirname(__FILE__) . "/../../";
 
     if (!empty($template_name)) {
         $originFilePath = '/var/lib/libvirt/img_templates/' . $template_name . DIRECTORY_SEPARATOR;
@@ -163,7 +163,7 @@ function cloneVolume($template_name, $volume_name, $new_volume_name)
 
 function getVolumeProgress($filename)
 {
-    $logFilePath = getcwd().DIRECTORY_SEPARATOR;
+    $logFilePath = dirname(__FILE__) . "/../../";
     $line = '';
     $f = fopen($logFilePath . $filename, 'r') or verbose(0, 'Error while opening file');
     $cursor = -1;
