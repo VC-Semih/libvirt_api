@@ -48,7 +48,7 @@ function createTemplate()
     if (createFolder($template_path, $template_name)) {
         if (file_exists($volume_path . $template_volume_name)) {
             if (rename($volume_path . $template_volume_name, $template_path . $template_name . DIRECTORY_SEPARATOR . 'template_' . $template_name . '.qcow2')) {
-                $lv->storagepool_refresh('default');
+                $lv->storagepool_refresh('images');
                 $description_file = fopen($template_path . $template_name . DIRECTORY_SEPARATOR . 'description_' . $template_name . '.json', 'w') or verbose(0, 'Can\'t create description file');
                 fwrite($description_file, json_encode($template_description));
                 fclose($description_file);
