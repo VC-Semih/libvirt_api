@@ -105,9 +105,7 @@ function deleteGroup($group_name){
 function createGroupFolder(){
     global $group_dir;
     if (!file_exists($group_dir)) {
-        if (!mkdir($group_dir, 0777, true)) {
-            verbose(0, "Failed to create $group_dir");
-        }
+        mkdir($group_dir, 0777, true);
     }
 }
 
