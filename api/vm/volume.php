@@ -96,7 +96,7 @@ function uploadVolume()
     // (E) CHECK IF FILE HAS BEEN UPLOADED
     if (!$chunks || $chunk == $chunks - 1) {
         rename("{$filePath}.part", $filePath);
-        $lv->storagepool_refresh('default');
+        $lv->storagepool_refresh('images');
         verbose(1, "Upload OK");
     }
 }
@@ -115,7 +115,7 @@ function cloneVolume($template_name, $volume_name, $new_volume_name)
     if ($volume_name === $new_volume_name) {
         verbose(0, 'Volume name and new volume name can\'t be the same');
     }
-    if ($lv->storagepool_get_volume_information('default', $volume_name) || !empty($template_name)) {
+    if ($lv->storagepool_get_volume_information('images', $volume_name) || !empty($template_name)) {
         if (file_exists($destFilePath . $new_volume_name)) {
             verbose(0, 'The specified new volume name is already taken !');
         }
@@ -151,7 +151,7 @@ function cloneVolume($template_name, $volume_name, $new_volume_name)
         }else{
             unlink($logFilePath . $volume_name . $new_volume_name . 'copyprogress.txt');
         }
-        $lv->storagepool_refresh('default');
+        $lv->storagepool_refresh('images');
         if (empty($template_name)) {
             verbose(1, 'The volume ' . $volume_name . ' has been copied as ' . $new_volume_name);
         }

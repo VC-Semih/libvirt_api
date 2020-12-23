@@ -235,7 +235,7 @@ function deleteVM($uuid)
             $lv->domain_undefine($domName);
             if (file_exists($disk)) {
                 unlink($disk);
-                $lv->storagepool_refresh('default');
+                $lv->storagepool_refresh('images');
                 $success_message = "The domain " . $domName . " has been destroyed";
                 if ($group_name = findUUIDGroup($uuid)) {
                     if (deleteGroupMember($group_name, $uuid)) {
