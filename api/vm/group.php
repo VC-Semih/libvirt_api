@@ -101,8 +101,20 @@ function deleteGroup($group_name){
         verbose(0, 'Specified group not found !');
     }
 }
+
+function createGroupFolder(){
+    global $group_dir;
+    if (!file_exists($group_dir)) {
+        if (!mkdir($group_dir, 0777, true)) {
+            verbose(0, "Failed to create $group_dir");
+        }
+    }
+}
+
+
 if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the link corresponds to the file (and not another api that made require() )
     $request_method = $_SERVER['REQUEST_METHOD'];
+    createGroupFolder();
     switch ($request_method) {
         case 'GET':
             // Retrive VM state
