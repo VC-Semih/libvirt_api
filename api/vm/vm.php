@@ -253,6 +253,7 @@ function deleteVM($uuid)
 }
 if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the link corresponds to the file (and not another api that made require() )
     $request_method = $_SERVER['REQUEST_METHOD'];
+    addCors();
     switch ($request_method) {
         case 'GET':
             // Retrive VMs
@@ -263,29 +264,20 @@ if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the lin
                 getAllVMs();
             }
             break;
-        default:
-            // Invalid Request Method
-            header("HTTP/1.0 405 Method Not Allowed");
-            break;
-
         case 'POST':
             if ($_POST['vmname']) {
                 addVM($_POST['vmname'], $_POST['ram'], $_POST['disk'], $_POST['cpucores']);
             }
             break;
-
-        case 'PUT':
-            // Modifier un produit
-            $id = intval($_GET["id"]);
-            updateProduct($id);
-            break;
-
         case 'DELETE':
-            // Supprimer un produit
+            // Delete VM
             $uuid = $_GET["uuid"];
             deleteVM($uuid);
             break;
-
+        default:
+            // Invalid Request Method
+            header("HTTP/1.0 405 Method Not Allowed");
+            break;
     }
 }
 ?>

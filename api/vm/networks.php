@@ -114,6 +114,7 @@ function changeNetworkConfiguration($network_name)
 
 if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the link corresponds to the file (and not another api that made require() )
     $request_method = $_SERVER['REQUEST_METHOD'];
+    addCors();
     switch ($request_method) {
         case 'GET':
             if(isset($_GET['network_name']) && !empty($_GET['network_name'])) {

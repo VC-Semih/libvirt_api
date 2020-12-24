@@ -119,16 +119,7 @@ function deployTemplate($template_name)
 
 if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the link corresponds to the file (and not another api that made require() )
     $request_method = $_SERVER['REQUEST_METHOD'];
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: POST, GET, DELETE, PUT, PATCH, OPTIONS');
-        header('Access-Control-Allow-Headers: token, Content-Type');
-        header('Access-Control-Max-Age: 1728000');
-        header('Content-Length: 0');
-        header('Content-Type: text/plain');
-        die();
-    }
-    header('Access-Control-Allow-Origin: *');
+    addCors();
     switch ($request_method) {
         case 'GET':
             getTemplates();
