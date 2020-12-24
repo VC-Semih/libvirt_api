@@ -1,5 +1,10 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
+/**
+ * Returns a json response of the state of the given domain uuid (running, shutoff etc...).
+ * @param $uuid
+ * @api
+ */
 function getVMState($uuid)
 {
     global $lv;
@@ -21,6 +26,13 @@ function getVMState($uuid)
     echo json_encode($result, JSON_PRETTY_PRINT);
 }
 
+/**
+ * Changes the state of the given domain uuid, the state is passed by x-www-form-urlencoded as `action`.
+ * Action value can be domain-start, domain-stop, domain-suspend, domain-resume
+ * Returns a json response.
+ * @api
+ * @param $uuid
+ */
 function changeVMState($uuid)
 {
     global $lv;

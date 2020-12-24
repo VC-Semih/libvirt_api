@@ -1,9 +1,9 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
-
-error_reporting(E_ALL);
-ini_set('display_errors', TRUE);
-ini_set('display_startup_errors', TRUE);
+/**
+ * Returns json response with all templates (template name, description, disk name)
+ * @api
+ */
 function getTemplates()
 {
     $template_path = '/var/lib/libvirt/img_templates/';
@@ -31,7 +31,12 @@ function getTemplates()
     echo json_encode($myJson, JSON_PRETTY_PRINT);
 }
 
-
+/**
+ * Creates a template with given posts
+ * Posts: template_name, template_volume_name, template_description, template_cpu, template_ram.
+ * Returns json response.
+ * @api
+ */
 function createTemplate()
 {
     global $lv;
@@ -66,6 +71,12 @@ function createTemplate()
     }
 }
 
+/**
+ * Removes a template with the given name.
+ * Returns json response.
+ * @param $name
+ * @api
+ */
 function deleteTemplate($name)
 {
     $template_path = '/var/lib/libvirt/img_templates/';
@@ -78,6 +89,12 @@ function deleteTemplate($name)
     }
 }
 
+/**
+ * Deploys a template with the given name.
+ * Returns json response.
+ * @api
+ * @param $template_name
+ */
 function deployTemplate($template_name)
 {
     require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'volume.php'); // Need volume php to transfer the volume
@@ -96,15 +113,15 @@ function deployTemplate($template_name)
                 $new_volume_name = $template_name . '.qcow2';
                 $testedname = $new_volume_name;
                 $number = 0;
-                while (file_exists($volume_path . $testedname)) {
+                while (file_exists($volume_path . $testedname)) { //Searching for a unused name
                     $number++;
                     $testedname = $new_volume_name;
                     $testedname = $number . '_' . $testedname;
                 }
                 $new_volume_name = $testedname;
-                cloneVolume($template_name, $template_volume_name, $new_volume_name);
-                $domName = explode('.',$new_volume_name)[0];
-                addVM($domName, $description['template_ram'], $volume_path . $new_volume_name , $description['template_cpu']);
+                cloneVolume($template_name, $template_volume_name, $new_volume_name); // Calling function clone Volume from volume.php
+                $domName = explode('.', $new_volume_name)[0];
+                addVM($domName, $description['template_ram'], $volume_path . $new_volume_name, $description['template_cpu']); // Calling function addVm from vm.php
             } else {
                 verbose(0, 'Cannot find template volume !');
             }

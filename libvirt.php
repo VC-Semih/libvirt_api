@@ -1,67 +1,127 @@
 <?php
-class Libvirt {
+class Libvirt
+{
     private $conn;
     private $last_error;
     private $allow_cached = true;
     private $dominfos = array();
 
-    function __construct($debug = false) {
+    /**
+     * Libvirt constructor.
+     * @param false $debug
+     */
+    function __construct($debug = false)
+    {
         if ($debug)
             $this->set_logfile($debug);
     }
 
-    function _set_last_error() {
+    /**
+     * @return false
+     */
+    function _set_last_error()
+    {
         $this->last_error = libvirt_get_last_error();
         return false;
     }
 
-    function set_logfile($filename) {
+    /**
+     * @param $filename
+     * @return bool
+     */
+    function set_logfile($filename)
+    {
         if (!libvirt_logfile_set($filename))
             return $this->_set_last_error();
 
         return true;
     }
 
-    function print_resources() {
+    /**
+     * @return mixed
+     */
+    function print_resources()
+    {
         return libvirt_print_binding_resources();
     }
 
-    function connect($uri = 'null') {
-        $this->conn=libvirt_connect($uri, false);
-        if ($this->conn==false)
+    /**
+     * @param string $uri
+     * @return false
+     */
+    function connect($uri = 'null')
+    {
+        $this->conn = libvirt_connect($uri, false);
+        if ($this->conn == false)
             return $this->_set_last_error();
         return $this->conn;
     }
 
-    function domain_disk_add($domain, $img, $dev, $type='scsi', $driver='raw') {
+    /**
+     * @param $domain
+     * @param $img
+     * @param $dev
+     * @param string $type
+     * @param string $driver
+     * @return false
+     */
+    function domain_disk_add($domain, $img, $dev, $type = 'scsi', $driver = 'raw')
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_disk_add($dom, $img, $dev, $type, $driver);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_change_numVCpus($domain, $num) {
+    /**
+     * @param $domain
+     * @param $num
+     * @return false
+     */
+    function domain_change_numVCpus($domain, $num)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_change_vcpus($dom, $num);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_change_memory_allocation($domain, $memory, $maxmem) {
+    /**
+     * @param $domain
+     * @param $memory
+     * @param $maxmem
+     * @return false
+     */
+    function domain_change_memory_allocation($domain, $memory, $maxmem)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_change_memory($dom, $memory, $maxmem);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_change_boot_devices($domain, $first, $second) {
+    /**
+     * @param $domain
+     * @param $first
+     * @param $second
+     * @return false
+     */
+    function domain_change_boot_devices($domain, $first, $second)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_change_boot_devices($dom, $first, $second);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_screenshot($domain, $convert = 1) {
+    /**
+     * @param $domain
+     * @param int $convert
+     * @return false
+     * @throws ImagickException
+     */
+    function domain_get_screenshot($domain, $convert = 1)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_get_screenshot_api($dom);
@@ -89,7 +149,14 @@ class Libvirt {
         return $tmp;
     }
 
-    function domain_get_screenshot_thumbnail($domain, $w=120) {
+    /**
+     * @param $domain
+     * @param int $w
+     * @return false
+     * @throws ImagickException
+     */
+    function domain_get_screenshot_thumbnail($domain, $w = 120)
+    {
         $screen = $this->domain_get_screenshot($domain);
 
         if (!$screen)
@@ -107,7 +174,13 @@ class Libvirt {
         return $screen;
     }
 
-    function domain_get_screen_dimensions($domain) {
+    /**
+     * @param $domain
+     * @return false[]
+     * @throws ImagickException
+     */
+    function domain_get_screen_dimensions($domain)
+    {
         $screen = $this->domain_get_screenshot($domain);
         $imgFile = tempnam("/tmp", "libvirt-php-tmp-resize-XXXXXX");
 
@@ -127,39 +200,74 @@ class Libvirt {
         return array('height' => $height, 'width' => $width);
     }
 
-    function domain_send_keys($domain, $keys) {
+    /**
+     * @param $domain
+     * @param $keys
+     * @return false
+     */
+    function domain_send_keys($domain, $keys)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_send_keys($dom, $this->get_hostname(), $keys);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_send_pointer_event($domain, $x, $y, $clicked = 1) {
+    /**
+     * @param $domain
+     * @param $x
+     * @param $y
+     * @param int $clicked
+     * @return false
+     */
+    function domain_send_pointer_event($domain, $x, $y, $clicked = 1)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_send_pointer_event($dom, $this->get_hostname(), $x, $y, $clicked, true);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_disk_remove($domain, $dev) {
+    /**
+     * @param $domain
+     * @param $dev
+     * @return false
+     */
+    function domain_disk_remove($domain, $dev)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_disk_remove($dom, $dev);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function supports($name) {
+    /**
+     * @param $name
+     * @return mixed
+     */
+    function supports($name)
+    {
         return libvirt_has_feature($name);
     }
 
-    function macbyte($val) {
+    /**
+     * @param $val
+     * @return string
+     */
+    function macbyte($val)
+    {
         if ($val < 16)
-            return '0'.dechex($val);
+            return '0' . dechex($val);
 
         return dechex($val);
     }
 
-    function generate_random_mac_addr($seed=false) {
+    /**
+     * @param false $seed
+     * @return string
+     */
+    function generate_random_mac_addr($seed = false)
+    {
         if (!$seed)
             $seed = 1;
 
@@ -175,13 +283,21 @@ class Libvirt {
             }
         }
 
-        return $prefix.':'.
-            $this->macbyte(($seed * rand()) % 256).':'.
-            $this->macbyte(($seed * rand()) % 256).':'.
+        return $prefix . ':' .
+            $this->macbyte(($seed * rand()) % 256) . ':' .
+            $this->macbyte(($seed * rand()) % 256) . ':' .
             $this->macbyte(($seed * rand()) % 256);
     }
 
-    function domain_nic_add($domain, $mac, $network, $model=false) {
+    /**
+     * @param $domain
+     * @param $mac
+     * @param $network
+     * @param false $model
+     * @return false
+     */
+    function domain_nic_add($domain, $mac, $network, $model = false)
+    {
         $dom = $this->get_domain_object($domain);
 
         if ($model == 'default')
@@ -191,28 +307,47 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_nic_remove($domain, $mac) {
+    /**
+     * @param $domain
+     * @param $mac
+     * @return false
+     */
+    function domain_nic_remove($domain, $mac)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = libvirt_domain_nic_remove($dom, $mac);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_connection() {
+    /**
+     * @return mixed
+     */
+    function get_connection()
+    {
         return $this->conn;
     }
 
-    function get_hostname() {
+    /**
+     * @return mixed
+     */
+    function get_hostname()
+    {
         return libvirt_connect_get_hostname($this->conn);
     }
 
-    function get_domain_object($nameRes) {
+    /**
+     * @param $nameRes
+     * @return false|resource
+     */
+    function get_domain_object($nameRes)
+    {
         if (is_resource($nameRes))
             return $nameRes;
 
-        $dom=@libvirt_domain_lookup_by_name($this->conn, $nameRes);
+        $dom = @libvirt_domain_lookup_by_name($this->conn, $nameRes);
         if (!$dom) {
-            $dom=@libvirt_domain_lookup_by_uuid_string($this->conn, $nameRes);
+            $dom = @libvirt_domain_lookup_by_uuid_string($this->conn, $nameRes);
             if (!$dom)
                 return $this->_set_last_error();
         }
@@ -220,7 +355,14 @@ class Libvirt {
         return $dom;
     }
 
-    function get_xpath($domain, $xpath, $inactive = false) {
+    /**
+     * @param $domain
+     * @param $xpath
+     * @param false $inactive
+     * @return false
+     */
+    function get_xpath($domain, $xpath, $inactive = false)
+    {
         $dom = $this->get_domain_object($domain);
         $flags = 0;
         if ($inactive)
@@ -233,11 +375,17 @@ class Libvirt {
         return $tmp;
     }
 
-    function get_cdrom_stats($domain, $sort=true) {
+    /**
+     * @param $domain
+     * @param bool $sort
+     * @return array
+     */
+    function get_cdrom_stats($domain, $sort = true)
+    {
         $dom = $this->get_domain_object($domain);
 
-        $buses =  $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@bus', false);
-        $disks =  $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@dev', false);
+        $buses = $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@bus', false);
+        $disks = $this->get_xpath($dom, '//domain/devices/disk[@device="cdrom"]/target/@dev', false);
 
         $ret = array();
         for ($i = 0; $i < $disks['num']; $i++) {
@@ -268,11 +416,17 @@ class Libvirt {
         return $ret;
     }
 
-    function get_disk_stats($domain, $sort=true) {
+    /**
+     * @param $domain
+     * @param bool $sort
+     * @return array
+     */
+    function get_disk_stats($domain, $sort = true)
+    {
         $dom = $this->get_domain_object($domain);
 
-        $buses =  $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@bus', false);
-        $disks =  $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@dev', false);
+        $buses = $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@bus', false);
+        $disks = $this->get_xpath($dom, '//domain/devices/disk[@device="disk"]/target/@dev', false);
         // create image as: qemu-img create -f qcow2 -o backing_file=RAW_IMG OUT_QCOW_IMG SIZE[K,M,G suffixed]
 
         $ret = array();
@@ -304,10 +458,15 @@ class Libvirt {
         return $ret;
     }
 
-    function get_nic_info($domain) {
+    /**
+     * @param $domain
+     * @return array|false
+     */
+    function get_nic_info($domain)
+    {
         $dom = $this->get_domain_object($domain);
 
-        $macs =  $this->get_xpath($dom, '//domain/devices/interface[@type="network"]/mac/@address', false);
+        $macs = $this->get_xpath($dom, '//domain/devices/interface[@type="network"]/mac/@address', false);
         if (!$macs)
             return $this->_set_last_error();
 
@@ -323,7 +482,12 @@ class Libvirt {
         return $ret;
     }
 
-    function get_domain_type($domain) {
+    /**
+     * @param $domain
+     * @return false|mixed
+     */
+    function get_domain_type($domain)
+    {
         $dom = $this->get_domain_object($domain);
 
         $tmp = $this->get_xpath($dom, '//domain/@type', false);
@@ -336,10 +500,15 @@ class Libvirt {
         return $ret;
     }
 
-    function get_domain_emulator($domain) {
+    /**
+     * @param $domain
+     * @return false|mixed
+     */
+    function get_domain_emulator($domain)
+    {
         $dom = $this->get_domain_object($domain);
 
-        $tmp =  $this->get_xpath($dom, '//domain/devices/emulator', false);
+        $tmp = $this->get_xpath($dom, '//domain/devices/emulator', false);
         if ($tmp['num'] == 0)
             return $this->_set_last_error();
 
@@ -349,17 +518,30 @@ class Libvirt {
         return $ret;
     }
 
-    function get_network_cards($domain) {
+    /**
+     * @param $domain
+     * @return false|mixed
+     */
+    function get_network_cards($domain)
+    {
         $dom = $this->get_domain_object($domain);
 
-        $nics =  $this->get_xpath($dom, '//domain/devices/interface[@type="network"]', false);
+        $nics = $this->get_xpath($dom, '//domain/devices/interface[@type="network"]', false);
         if (!is_array($nics))
             return $this->_set_last_error();
 
         return $nics['num'];
     }
 
-    function get_disk_capacity($domain, $physical=false, $disk='*', $unit='?') {
+    /**
+     * @param $domain
+     * @param false $physical
+     * @param string $disk
+     * @param string $unit
+     * @return false|string
+     */
+    function get_disk_capacity($domain, $physical = false, $disk = '*', $unit = '?')
+    {
         $dom = $this->get_domain_object($domain);
         $tmp = $this->get_disk_stats($dom);
 
@@ -376,7 +558,12 @@ class Libvirt {
         return $this->format_size($ret, 2, $unit);
     }
 
-    function get_disk_count($domain) {
+    /**
+     * @param $domain
+     * @return int
+     */
+    function get_disk_count($domain)
+    {
         $dom = $this->get_domain_object($domain);
         $tmp = $this->get_disk_stats($dom);
         $ret = sizeof($tmp);
@@ -385,7 +572,14 @@ class Libvirt {
         return $ret;
     }
 
-    function format_size($value, $decimals, $unit='?') {
+    /**
+     * @param $value
+     * @param $decimals
+     * @param string $unit
+     * @return false|string
+     */
+    function format_size($value, $decimals, $unit = '?')
+    {
         /* Autodetect unit that's appropriate */
         if ($unit == '?') {
             /* (1 << 40) is not working correctly on i386 systems */
@@ -424,14 +618,20 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_storagepools() {
+    function get_storagepools()
+    {
         $tmp = libvirt_list_storagepools($this->conn);
         if ($tmp)
             sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_storagepool_res($res) {
+    /**
+     * @param $res
+     * @return false|resource
+     */
+    function get_storagepool_res($res)
+    {
         if ($res == false)
             return false;
         if (is_resource($res))
@@ -469,7 +669,7 @@ class Libvirt {
         $tmp['id_user'] = $otmp1;
         $tmp['id_group'] = $otmp2;
         if ($tmp['active']) {
-            $tmp['volume_count'] = sizeof( libvirt_storagepool_list_volumes($res) );
+            $tmp['volume_count'] = sizeof(libvirt_storagepool_list_volumes($res));
         } else {
             $tmp['volume_count'] = 0;
         }
@@ -477,7 +677,13 @@ class Libvirt {
         return $tmp;
     }
 
-    function storagepool_get_volume_information($pool, $name=false) {
+    /**
+     * @param $pool
+     * @param false $name
+     * @return array|false
+     */
+    function storagepool_get_volume_information($pool, $name = false)
+    {
         if (!is_resource($pool))
             $pool = $this->get_storagepool_res($pool);
         if (!$pool)
@@ -497,19 +703,29 @@ class Libvirt {
         return $out;
     }
 
-    function storagepool_refresh($pool){
-        if(!is_resource($pool))
+    /**
+     * @param $pool
+     * @return bool
+     */
+    function storagepool_refresh($pool)
+    {
+        if (!is_resource($pool))
             $pool = $this->get_storagepool_res($pool);
-        if(!$pool)
+        if (!$pool)
             return false;
 
-        if(!libvirt_storagepool_refresh($pool, 0))
+        if (!libvirt_storagepool_refresh($pool, 0))
             return $this->_set_last_error();
 
         return true;
     }
 
-    function storagevolume_delete($path) {
+    /**
+     * @param $path
+     * @return bool
+     */
+    function storagevolume_delete($path)
+    {
         $vol = libvirt_storagevolume_lookup_by_path($this->conn, $path);
         if (!libvirt_storagevolume_delete($vol))
             return $this->_set_last_error();
@@ -517,87 +733,130 @@ class Libvirt {
         return true;
     }
 
-    function storagevolume_path_exists($path){
-         return libvirt_storagevolume_lookup_by_path($this->conn, $path) ? true : false;
+    /**
+     * @param $path
+     * @return bool
+     */
+    function storagevolume_path_exists($path)
+    {
+        return libvirt_storagevolume_lookup_by_path($this->conn, $path) ? true : false;
     }
 
-    function storagevolume_get_xml($volume_name){
+    /**
+     * @param $volume_name
+     * @return mixed
+     */
+    function storagevolume_get_xml($volume_name)
+    {
         $storagepool_ressource = libvirt_storagepool_lookup_by_name($this->conn, 'default');
         $volume_ressource = libvirt_storagevolume_lookup_by_name($storagepool_ressource, $volume_name);
         return libvirt_storagevolume_get_xml_desc($volume_ressource, NULL, 0);
     }
 
-    function translate_volume_type($type) {
+    /**
+     * @param $type
+     * @return string
+     */
+    function translate_volume_type($type)
+    {
         if ($type == 1)
             return 'Block device';
 
         return 'File image';
     }
 
-    function translate_perms($mode) {
+    /**
+     * @param $mode
+     * @return string
+     */
+    function translate_perms($mode)
+    {
         $mode = (int)$mode;
 
         $tmp = '---------';
 
-        for ($i = 2; $i >=0 ; $i--) {
+        for ($i = 2; $i >= 0; $i--) {
             $bits = $mode % 10;
             $mode /= 10;
             if ($bits & 4)
-                $tmp[ ($i * 3) ] = 'r';
+                $tmp[($i * 3)] = 'r';
             if ($bits & 2)
-                $tmp[ ($i * 3) + 1 ] = 'w';
+                $tmp[($i * 3) + 1] = 'w';
             if ($bits & 1)
-                $tmp[ ($i * 3) + 2 ] = 'x';
+                $tmp[($i * 3) + 2] = 'x';
         }
 
 
         return $tmp;
     }
 
-    function parse_size($size) {
-        $unit = $size[ strlen($size) - 1 ];
+    /**
+     * @param $size
+     * @return int
+     */
+    function parse_size($size)
+    {
+        $unit = $size[strlen($size) - 1];
 
         $size = (int)$size;
         switch (strtoupper($unit)) {
-        case 'T': $size *= 1099511627776;
-        break;
-        case 'G': $size *= 1073741824;
-        break;
-        case 'M': $size *= 1048576;
-        break;
-        case 'K': $size *= 1024;
-        break;
+            case 'T':
+                $size *= 1099511627776;
+                break;
+            case 'G':
+                $size *= 1073741824;
+                break;
+            case 'M':
+                $size *= 1048576;
+                break;
+            case 'K':
+                $size *= 1024;
+                break;
         }
 
         return $size;
     }
 
-    function storagevolume_create($pool, $name, $capacity, $allocation) {
+    /**
+     * @param $pool
+     * @param $name
+     * @param $capacity
+     * @param $allocation
+     * @return false
+     */
+    function storagevolume_create($pool, $name, $capacity, $allocation)
+    {
         $pool = $this->get_storagepool_res($pool);
 
         $capacity = $this->parse_size($capacity);
         $allocation = $this->parse_size($allocation);
 
-        $xml = "<volume>\n".
-            "  <name>$name</name>\n".
-            "  <capacity>$capacity</capacity>\n".
-            "  <allocation>$allocation</allocation>\n".
+        $xml = "<volume>\n" .
+            "  <name>$name</name>\n" .
+            "  <capacity>$capacity</capacity>\n" .
+            "  <allocation>$allocation</allocation>\n" .
             "</volume>";
 
         $tmp = libvirt_storagevolume_create_xml($pool, $xml);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_hypervisor_name() {
+    /**
+     * @return mixed|string
+     */
+    function get_hypervisor_name()
+    {
         $tmp = libvirt_connect_get_information($this->conn);
         $hv = $tmp['hypervisor'];
         unset($tmp);
 
         switch (strtoupper($hv)) {
-        case 'QEMU': $type = 'qemu';
-        break;
-        case 'XEN': $type = 'xen';
-        break;
+            case 'QEMU':
+                $type = 'qemu';
+                break;
+            case 'XEN':
+                $type = 'xen';
+                break;
 
         default:
         $type = $hv;
@@ -606,12 +865,19 @@ class Libvirt {
         return $type;
     }
 
-    function get_connect_information() {
+    function get_connect_information()
+    {
         $tmp = libvirt_connect_get_information($this->conn);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_change_xml($domain, $xml) {
+    /**
+     * @param $domain
+     * @param $xml
+     * @return bool
+     */
+    function domain_change_xml($domain, $xml)
+    {
         $dom = $this->get_domain_object($domain);
 
         if (!($old_xml = libvirt_domain_get_xml_desc($dom, NULL)))
@@ -627,7 +893,13 @@ class Libvirt {
         return true;
     }
 
-    function network_change_xml($network, $xml) {
+    /**
+     * @param $network
+     * @param $xml
+     * @return bool
+     */
+    function network_change_xml($network, $xml)
+    {
         $net = $this->get_network_res($network);
 
         if (!($old_xml = libvirt_network_get_xml_desc($net, NULL))) {
@@ -645,16 +917,25 @@ class Libvirt {
         return true;
     }
 
-    function translate_storagepool_state($state) {
+    /**
+     * @param $state
+     * @return string
+     */
+    function translate_storagepool_state($state)
+    {
         switch ($state) {
-        case 0: return 'Not running';
-        break;
-        case 1: return 'Building pool';
-        break;
-        case 2: return 'Running';
-        break;
-        case 3: return 'Running degraded';
-        break;
+            case 0:
+                return 'Not running';
+                break;
+            case 1:
+                return 'Building pool';
+                break;
+            case 2:
+                return 'Running';
+                break;
+            case 3:
+                return 'Running degraded';
+                break;
         case 4: return 'Running but inaccessible';
         break;
         }
@@ -669,35 +950,56 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_domain_by_name($name) {
+    function get_domain_by_name($name)
+    {
         $tmp = libvirt_domain_lookup_by_name($this->conn, $name);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_networks($type = VIR_NETWORKS_ALL) {
+    /**
+     * @param $type
+     * @return false|mixed
+     */
+    function get_networks($type = VIR_NETWORKS_ALL)
+    {
         $tmp = libvirt_list_networks($this->conn, $type);
         if ($tmp)
             sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_network_by_name($network_name, $type = VIR_NETWORKS_ALL){
+    /**
+     * @param $network_name
+     * @param $type
+     * @return false|mixed
+     */
+    function get_network_by_name($network_name, $type = VIR_NETWORKS_ALL)
+    {
         $tmp = libvirt_list_networks($this->conn, $type);
-        if($tmp)
+        if ($tmp)
             $key = array_search($network_name, $tmp, true);
-            if($key !== false){
-                $tmp = $tmp[(int)$key];
-            }else{
-                $tmp = null;
-            }
+        if ($key !== false) {
+            $tmp = $tmp[(int)$key];
+        } else {
+            $tmp = null;
+        }
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_nic_models() {
+    /**
+     * @return string[]
+     */
+    function get_nic_models()
+    {
         return array('default', 'rtl8139', 'e1000', 'pcnet', 'ne2k_pci', 'virtio');
     }
 
-    function get_network_res($network) {
+    /**
+     * @param $network
+     * @return false|resource
+     */
+    function get_network_res($network)
+    {
         if ($network == false)
             return false;
         if (is_resource($network))
@@ -707,7 +1009,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_network_bridge($network) {
+    /**
+     * @param $network
+     * @return false|mixed
+     */
+    function get_network_bridge($network)
+    {
         $res = $this->get_network_res($network);
         if ($res == false)
             return false;
@@ -716,7 +1023,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_network_active($network) {
+    /**
+     * @param $network
+     * @return false|mixed
+     */
+    function get_network_active($network)
+    {
         $res = $this->get_network_res($network);
         if ($res == false)
             return false;
@@ -725,7 +1037,13 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function set_network_active($network, $active = true) {
+    /**
+     * @param $network
+     * @param bool $active
+     * @return bool
+     */
+    function set_network_active($network, $active = true)
+    {
         $res = $this->get_network_res($network);
         if ($res == false)
             return false;
@@ -736,7 +1054,12 @@ class Libvirt {
         return true;
     }
 
-    function get_network_information($network) {
+    /**
+     * @param $network
+     * @return false|mixed
+     */
+    function get_network_information($network)
+    {
         $res = $this->get_network_res($network);
         if ($res == false)
             return false;
@@ -748,7 +1071,12 @@ class Libvirt {
         return $tmp;
     }
 
-    function get_network_xml($network) {
+    /**
+     * @param $network
+     * @return false|mixed
+     */
+    function get_network_xml($network)
+    {
         $res = $this->get_network_res($network);
         if ($res == false)
             return false;
@@ -757,14 +1085,24 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_node_devices($dev = false) {
+    /**
+     * @param false $dev
+     * @return false|mixed
+     */
+    function get_node_devices($dev = false)
+    {
         $tmp = ($dev == false) ? libvirt_list_nodedevs($this->conn) : libvirt_list_nodedevs($this->conn, $dev);
         if ($tmp)
             sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_node_device_res($res) {
+    /**
+     * @param $res
+     * @return false|resource
+     */
+    function get_node_device_res($res)
+    {
         if ($res == false)
             return false;
         if (is_resource($res))
@@ -774,14 +1112,23 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_node_device_caps($dev) {
+    /**
+     * @param $dev
+     * @return false|mixed
+     */
+    function get_node_device_caps($dev)
+    {
         $dev = $this->get_node_device_res($dev);
 
         $tmp = libvirt_nodedev_capabilities($dev);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_node_device_cap_options() {
+    /**
+     * @return array
+     */
+    function get_node_device_cap_options()
+    {
         $all = $this->get_node_devices();
 
         $ret = array();
@@ -796,25 +1143,45 @@ class Libvirt {
         return $ret;
     }
 
-    function get_node_device_xml($dev) {
+    /**
+     * @param $dev
+     * @return false|string
+     */
+    function get_node_device_xml($dev)
+    {
         $dev = $this->get_node_device_res($dev);
 
         $tmp = libvirt_nodedev_get_xml_desc($dev, NULL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_node_device_information($dev) {
+    /**
+     * @param $dev
+     * @return false|mixed
+     */
+    function get_node_device_information($dev)
+    {
         $dev = $this->get_node_device_res($dev);
 
         $tmp = libvirt_nodedev_get_information($dev);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_name($res) {
+    /**
+     * @param $res
+     * @return string
+     */
+    function domain_get_name($res)
+    {
         return libvirt_domain_get_name($res);
     }
 
-    function domain_get_info($dom) {
+    /**
+     * @param $dom
+     * @return mixed
+     */
+    function domain_get_info($dom)
+    {
         if (!$this->allow_cached)
             return libvirt_domain_get_info($dom);
 
@@ -827,11 +1194,21 @@ class Libvirt {
         return $this->dominfos[$domname];
     }
 
-    function get_last_error() {
+    /**
+     * @return mixed
+     */
+    function get_last_error()
+    {
         return $this->last_error;
     }
 
-    function domain_get_xml($domain, $get_inactive = false) {
+    /**
+     * @param $domain
+     * @param false $get_inactive
+     * @return false|string
+     */
+    function domain_get_xml($domain, $get_inactive = false)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -840,7 +1217,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function network_get_xml($network) {
+    /**
+     * @param $network
+     * @return false|string
+     */
+    function network_get_xml($network)
+    {
         $net = $this->get_network_res($network);
         if (!$net)
             return false;
@@ -849,7 +1231,13 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_id($domain, $name = false) {
+    /**
+     * @param $domain
+     * @param false $name
+     * @return false|string
+     */
+    function domain_get_id($domain, $name = false)
+    {
         $dom = $this->get_domain_object($domain);
         if ((!$dom) || (!$this->domain_is_running($dom, $name)))
             return false;
@@ -858,7 +1246,13 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_interface_stats($nameRes, $iface) {
+    /**
+     * @param $nameRes
+     * @param $iface
+     * @return false|mixed
+     */
+    function domain_get_interface_stats($nameRes, $iface)
+    {
         $dom = $this->get_domain_object($nameRes);
         if (!$dom)
             return false;
@@ -867,7 +1261,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_memory_stats($domain) {
+    /**
+     * @param $domain
+     * @return false|mixed
+     */
+    function domain_get_memory_stats($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -876,8 +1275,13 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_start($dom) {
-        $dom=$this->get_domain_object($dom);
+    /**
+     * @param $dom
+     * @return mixed
+     */
+    function domain_start($dom)
+    {
+        $dom = $this->get_domain_object($dom);
         if ($dom) {
             $ret = libvirt_domain_create($dom);
             $this->last_error = libvirt_get_last_error();
@@ -889,12 +1293,22 @@ class Libvirt {
         return $ret;
     }
 
-    function domain_define($xml) {
+    /**
+     * @param $xml
+     * @return false|resource
+     */
+    function domain_define($xml)
+    {
         $tmp = libvirt_domain_define_xml($this->conn, $xml);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_destroy($domain) {
+    /**
+     * @param $domain
+     * @return false|mixed
+     */
+    function domain_destroy($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -903,7 +1317,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_reboot($domain) {
+    /**
+     * @param $domain
+     * @return bool
+     */
+    function domain_reboot($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -912,16 +1331,26 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_reset($domain) {
+    /**
+     * @param $domain
+     * @return bool
+     */
+    function domain_reset($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
 
         $tmp = libvirt_domain_reset($dom);
-        return ($tmp) ? $tmp: $this->_set_last_error();
+        return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_suspend($domain) {
+    /**
+     * @param $domain
+     * @return bool
+     */
+    function domain_suspend($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -930,7 +1359,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_resume($domain) {
+    /**
+     * @param $domain
+     * @return bool
+     */
+    function domain_resume($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -939,7 +1373,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_get_name_by_uuid($uuid) {
+    /**
+     * @param $uuid
+     * @return false|string
+     */
+    function domain_get_name_by_uuid($uuid)
+    {
         $dom = libvirt_domain_lookup_by_uuid_string($this->conn, $uuid);
         if (!$dom)
             return false;
@@ -947,7 +1386,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_shutdown($domain) {
+    /**
+     * @param $domain
+     * @return bool
+     */
+    function domain_shutdown($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -956,7 +1400,12 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_undefine($domain) {
+    /**
+     * @param $domain
+     * @return bool
+     */
+    function domain_undefine($domain)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
@@ -965,57 +1414,92 @@ class Libvirt {
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_is_running($domain, $name = false) {
+    /**
+     * @param $domain
+     * @param false $name
+     * @return bool
+     */
+    function domain_is_running($domain, $name = false)
+    {
         $dom = $this->get_domain_object($domain);
         if (!$dom)
             return false;
         $tmp = $this->domain_get_info($dom);
         if (!$tmp)
             return $this->_set_last_error();
-        $ret = ( ($tmp['state'] == VIR_DOMAIN_RUNNING) || ($tmp['state'] == VIR_DOMAIN_BLOCKED) );
+        $ret = (($tmp['state'] == VIR_DOMAIN_RUNNING) || ($tmp['state'] == VIR_DOMAIN_BLOCKED));
         unset($tmp);
         return $ret;
     }
 
-    function domain_is_paused($domain, $name=false){
+    /**
+     * @param $domain
+     * @param false $name
+     * @return bool
+     */
+    function domain_is_paused($domain, $name = false)
+    {
         $dom = $this->get_domain_object($domain);
-        if(!$dom)
+        if (!$dom)
             return false;
         $tmp = $this->domain_get_info($dom);
-        if(!$tmp)
+        if (!$tmp)
             return $this->_set_last_error();
-        $ret = ( ($tmp['state'] == VIR_DOMAIN_PAUSED));
+        $ret = (($tmp['state'] == VIR_DOMAIN_PAUSED));
         unset($tmp);
         return $ret;
     }
 
-    function domain_is_shutdown($domain, $name=false){
+    /**
+     * @param $domain
+     * @param false $name
+     * @return bool
+     */
+    function domain_is_shutdown($domain, $name = false)
+    {
         $dom = $this->get_domain_object($domain);
-        if(!$dom)
+        if (!$dom)
             return false;
         $tmp = $this->domain_get_info($dom);
-        if(!$tmp)
+        if (!$tmp)
             return $this->_set_last_error();
-        $ret = ( ($tmp['state'] == VIR_DOMAIN_SHUTDOWN) || ($tmp['state'] == VIR_DOMAIN_SHUTOFF) );
+        $ret = (($tmp['state'] == VIR_DOMAIN_SHUTDOWN) || ($tmp['state'] == VIR_DOMAIN_SHUTOFF));
         unset($tmp);
         return $ret;
     }
 
-    function domain_state_translate($state) {
+    /**
+     * @param $state
+     * @return string
+     */
+    function domain_state_translate($state)
+    {
         switch ($state) {
-            case VIR_DOMAIN_RUNNING:  return 'running';
-            case VIR_DOMAIN_NOSTATE:  return 'nostate';
-            case VIR_DOMAIN_BLOCKED:  return 'blocked';
-            case VIR_DOMAIN_PAUSED:   return 'paused';
-            case VIR_DOMAIN_SHUTDOWN: return 'shutdown';
-            case VIR_DOMAIN_SHUTOFF:  return 'shutoff';
-            case VIR_DOMAIN_CRASHED:  return 'crashed';
+            case VIR_DOMAIN_RUNNING:
+                return 'running';
+            case VIR_DOMAIN_NOSTATE:
+                return 'nostate';
+            case VIR_DOMAIN_BLOCKED:
+                return 'blocked';
+            case VIR_DOMAIN_PAUSED:
+                return 'paused';
+            case VIR_DOMAIN_SHUTDOWN:
+                return 'shutdown';
+            case VIR_DOMAIN_SHUTOFF:
+                return 'shutoff';
+            case VIR_DOMAIN_CRASHED:
+                return 'crashed';
         }
 
         return 'Unknown';
     }
 
-    function domain_get_vnc_port($domain) {
+    /**
+     * @param $domain
+     * @return int
+     */
+    function domain_get_vnc_port($domain)
+    {
         $tmp = $this->get_xpath($domain, '//domain/devices/graphics/@port', false);
         $var = (int)$tmp[0];
         unset($tmp);
@@ -1023,7 +1507,12 @@ class Libvirt {
         return $var;
     }
 
-    function domain_get_arch($domain) {
+    /**
+     * @param $domain
+     * @return mixed
+     */
+    function domain_get_arch($domain)
+    {
         $domain = $this->get_domain_object($domain);
 
         $tmp = $this->get_xpath($domain, '//domain/os/type/@arch', false);
@@ -1033,7 +1522,12 @@ class Libvirt {
         return $var;
     }
 
-    function domain_get_description($domain) {
+    /**
+     * @param $domain
+     * @return mixed
+     */
+    function domain_get_description($domain)
+    {
         $tmp = $this->get_xpath($domain, '//domain/description', false);
         $var = $tmp[0];
         unset($tmp);
@@ -1041,7 +1535,12 @@ class Libvirt {
         return $var;
     }
 
-    function domain_get_clock_offset($domain) {
+    /**
+     * @param $domain
+     * @return mixed
+     */
+    function domain_get_clock_offset($domain)
+    {
         $tmp = $this->get_xpath($domain, '//domain/clock/@offset', false);
         $var = $tmp[0];
         unset($tmp);
@@ -1049,15 +1548,26 @@ class Libvirt {
         return $var;
     }
 
-    function domain_get_feature($domain, $feature) {
-        $tmp = $this->get_xpath($domain, '//domain/features/'.$feature.'/..', false);
+    /**
+     * @param $domain
+     * @param $feature
+     * @return bool
+     */
+    function domain_get_feature($domain, $feature)
+    {
+        $tmp = $this->get_xpath($domain, '//domain/features/' . $feature . '/..', false);
         $ret = ($tmp != false);
         unset($tmp);
 
         return $ret;
     }
 
-    function domain_get_boot_devices($domain) {
+    /**
+     * @param $domain
+     * @return array|false
+     */
+    function domain_get_boot_devices($domain)
+    {
         $tmp = $this->get_xpath($domain, '//domain/os/boot/@dev', false);
         if (!$tmp)
             return false;
@@ -1069,7 +1579,13 @@ class Libvirt {
         return $devs;
     }
 
-    function _get_single_xpath_result($domain, $xpath) {
+    /**
+     * @param $domain
+     * @param $xpath
+     * @return false
+     */
+    function _get_single_xpath_result($domain, $xpath)
+    {
         $tmp = $this->get_xpath($domain, $xpath, false);
         if (!$tmp)
             return false;
@@ -1080,7 +1596,14 @@ class Libvirt {
         return $tmp[0];
     }
 
-    function domain_get_multimedia_device($domain, $type, $display=false) {
+    /**
+     * @param $domain
+     * @param $type
+     * @param false $display
+     * @return array|false|string
+     */
+    function domain_get_multimedia_device($domain, $type, $display = false)
+    {
         $domain = $this->get_domain_object($domain);
 
         if ($type == 'console') {
@@ -1089,7 +1612,7 @@ class Libvirt {
             $targetPort = $this->_get_single_xpath_result($domain, '//domain/devices/console/target/@port');
 
             if ($display)
-                return $type.' ('.$targetType.' on port '.$targetPort.')';
+                return $type . ' (' . $targetType . ' on port ' . $targetPort . ')';
             else
                 return array('type' => $type, 'targetType' => $targetType, 'targetPort' => $targetPort);
         } else if ($type == 'input') {
@@ -1115,7 +1638,7 @@ class Libvirt {
             $heads = $this->_get_single_xpath_result($domain, '//domain/devices/video/model/@heads');
 
             if ($display)
-                return $type.' with '.($vram / 1024).' MB VRAM, '.$heads.' head(s)';
+                return $type . ' with ' . ($vram / 1024) . ' MB VRAM, ' . $heads . ' head(s)';
             else
                 return array('type' => $type, 'vram' => $vram, 'heads' => $heads);
         } else {
@@ -1123,13 +1646,18 @@ class Libvirt {
         }
     }
 
-    function domain_get_host_devices_pci($domain) {
+    /**
+     * @param $domain
+     * @return array
+     */
+    function domain_get_host_devices_pci($domain)
+    {
         $xpath = '//domain/devices/hostdev[@type="pci"]/source/address/@';
 
-        $dom  = $this->get_xpath($domain, $xpath.'domain', false);
-        $bus  = $this->get_xpath($domain, $xpath.'bus', false);
-        $slot = $this->get_xpath($domain, $xpath.'slot', false);
-        $func = $this->get_xpath($domain, $xpath.'function', false);
+        $dom = $this->get_xpath($domain, $xpath . 'domain', false);
+        $bus = $this->get_xpath($domain, $xpath . 'bus', false);
+        $slot = $this->get_xpath($domain, $xpath . 'slot', false);
+        $func = $this->get_xpath($domain, $xpath . 'function', false);
 
         $devs = array();
         for ($i = 0; $i < $bus['num']; $i++) {
@@ -1150,7 +1678,13 @@ class Libvirt {
         return $devs;
     }
 
-    function _lookup_device_usb($vendor_id, $product_id) {
+    /**
+     * @param $vendor_id
+     * @param $product_id
+     * @return false|mixed
+     */
+    function _lookup_device_usb($vendor_id, $product_id)
+    {
         $tmp = $this->get_node_devices(false);
         for ($i = 0; $i < sizeof($tmp); $i++) {
             $tmp2 = $this->get_node_device_information($tmp[$i]);
@@ -1164,11 +1698,16 @@ class Libvirt {
         return false;
     }
 
-    function domain_get_host_devices_usb($domain) {
+    /**
+     * @param $domain
+     * @return array
+     */
+    function domain_get_host_devices_usb($domain)
+    {
         $xpath = '//domain/devices/hostdev[@type="usb"]/source/';
 
-        $vid = $this->get_xpath($domain, $xpath.'vendor/@id', false);
-        $pid = $this->get_xpath($domain, $xpath.'product/@id', false);
+        $vid = $this->get_xpath($domain, $xpath . 'vendor/@id', false);
+        $pid = $this->get_xpath($domain, $xpath . 'product/@id', false);
 
         $devs = array();
         for ($i = 0; $i < $vid['num']; $i++) {
@@ -1181,7 +1720,12 @@ class Libvirt {
         return $devs;
     }
 
-    function domain_get_host_devices($domain) {
+    /**
+     * @param $domain
+     * @return array
+     */
+    function domain_get_host_devices($domain)
+    {
         $domain = $this->get_domain_object($domain);
 
         $devs_pci = $this->domain_get_host_devices_pci($domain);
@@ -1190,7 +1734,14 @@ class Libvirt {
         return array('pci' => $devs_pci, 'usb' => $devs_usb);
     }
 
-    function domain_set_feature($domain, $feature, $val) {
+    /**
+     * @param $domain
+     * @param $feature
+     * @param $val
+     * @return bool
+     */
+    function domain_set_feature($domain, $feature, $val)
+    {
         $domain = $this->get_domain_object($domain);
 
         if ($this->domain_get_feature($domain, $feature) == $val)
@@ -1209,7 +1760,13 @@ class Libvirt {
         return $this->domain_change_xml($domain, $xml);
     }
 
-    function domain_set_clock_offset($domain, $offset) {
+    /**
+     * @param $domain
+     * @param $offset
+     * @return bool
+     */
+    function domain_set_clock_offset($domain, $offset)
+    {
         $domain = $this->get_domain_object($domain);
 
         if (($old_offset = $this->domain_get_clock_offset($domain)) == $offset)
@@ -1221,7 +1778,13 @@ class Libvirt {
         return $this->domain_change_xml($domain, $xml);
     }
 
-    function domain_set_description($domain, $desc) {
+    /**
+     * @param $domain
+     * @param $desc
+     * @return bool
+     */
+    function domain_set_description($domain, $desc)
+    {
         $domain = $this->get_domain_object($domain);
 
         $description = $this->domain_get_description($domain);
@@ -1234,7 +1797,7 @@ class Libvirt {
         } else {
             $tmp = explode("\n", $xml);
             for ($i = 0; $i < sizeof($tmp); $i++)
-                if (strpos('.'.$tmp[$i], '<description'))
+                if (strpos('.' . $tmp[$i], '<description'))
                     $tmp[$i] = "<description>$desc</description>";
 
             $xml = join("\n", $tmp);
@@ -1243,24 +1806,42 @@ class Libvirt {
         return $this->domain_change_xml($domain, $xml);
     }
 
-    function host_get_node_info() {
+    /**
+     * @return false|mixed
+     */
+    function host_get_node_info()
+    {
         $tmp = libvirt_node_get_info($this->conn);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function domain_is_active($domain) {
+    /**
+     * @param $domain
+     * @return mixed
+     */
+    function domain_is_active($domain)
+    {
         $dom = $this->get_domain_object($domain);
         return libvirt_domain_is_active($dom);
     }
 
-    function get_nwfilters() {
+    /**
+     * @return false|mixed
+     */
+    function get_nwfilters()
+    {
         $tmp = libvirt_list_all_nwfilters($this->conn);
         if ($tmp)
             sort($tmp, SORT_NATURAL);
         return ($tmp) ? $tmp : $this->_set_last_error();
     }
 
-    function get_nwfilter_xml($uuid) {
+    /**
+     * @param $uuid
+     * @return false|string
+     */
+    function get_nwfilter_xml($uuid)
+    {
         $nwfilter = libvirt_nwfilter_lookup_by_uuid_string($this->conn, $uuid);
         if (!$nwfilter)
             return $this->_set_last_error();

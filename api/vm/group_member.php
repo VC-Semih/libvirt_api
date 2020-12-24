@@ -1,7 +1,10 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
 $group_dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'groups' . DIRECTORY_SEPARATOR;
-
+/**
+ * Returns json response with each members of each groups.
+ * @api
+ */
 function getGroupsMembers()
 {
     $myJson = array();
@@ -24,6 +27,12 @@ function getGroupsMembers()
     }
 }
 
+/**
+ * Returns json reponse with each members of provided group name
+ * @param $group_name
+ * @return array|false
+ * @api
+ */
 function getGroupMembers($group_name)
 {
     global $group_dir;
@@ -57,6 +66,11 @@ function getGroupMembers($group_name)
     return false;
 }
 
+/**
+ * Adds a member with valid uuid to a already existent group
+ * receives $_POST['uuid'] $_POST['group_name']
+ * @api
+ */
 function addGroupMember()
 {
     global $lv;
@@ -96,13 +110,20 @@ function addGroupMember()
     }
 }
 
+/**
+ * Deletes a member from a group
+ * @api
+ * @param $group_name
+ * @param $uuid
+ * @return bool
+ */
 function deleteGroupMember($group_name, $uuid)
 {
     global $group_dir;
-    $called = false;
-    if(!isset($group_dir)) {
-        $group_dir = __DIR__ . DIRECTORY_SEPARATOR . 'groups' . DIRECTORY_SEPARATOR;
-        $called = true;
+    $called = false; // Just to know if the function is called by another function or not
+    if (!isset($group_dir)) {
+        $group_dir = __DIR__ . DIRECTORY_SEPARATOR . 'groups' . DIRECTORY_SEPARATOR; // There is a bug with __DIR__ if another function calls this script this is a way to avoid it
+        $called = true; // So if the bug happens we know the script has been called by another function
     }
     if (is_dir($group_dir)) {
         $filename = $group_dir . $group_name . '.json';
@@ -116,9 +137,9 @@ function deleteGroupMember($group_name, $uuid)
                     $jsonData = json_encode($tempArray);
                     file_put_contents($filename, $jsonData);
                     if(!$called) {
-                        verbose(1, 'The uuid: ' . $uuid . ' has been removed from group: ' . $group_name);
-                    }else{
-                        return true;
+                        verbose(1, 'The uuid: ' . $uuid . ' has been removed from group: ' . $group_name); // if the function has not been called return a json response
+                    } else{
+                        return true; // Else return true to know everything is fine
                     }
                 } else {
                     verbose(0, 'This uuid isn\'t in this group !');
@@ -132,8 +153,14 @@ function deleteGroupMember($group_name, $uuid)
     } else {
         verbose(0, 'Fatal error, the group container doesn\'t exist');
     }
+    return false;
 }
 
+/**
+ * Finds if a domain is in a group, returns the name of the group or false
+ * @param $uuid
+ * @return false|string
+ */
 function findUUIDGroup($uuid)
 {
     $files = glob('groups/*.{json}', GLOB_BRACE);
@@ -156,10 +183,9 @@ if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the lin
     addCors();
     switch ($request_method) {
         case 'GET':
-            // Retrive VM state
-            if ($_GET['group_name']) {
+            if ($_GET['group_name']) { // If a group name has been asked
                 getGroupMembers($_GET['group_name']);
-            } else {
+            } else { // Else get all
                 getGroupsMembers();
             }
             break;
@@ -170,9 +196,6 @@ if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the lin
             $group_name = $_GET["group_name"];
             $uuid = $_GET["uuid"];
             deleteGroupMember($group_name, $uuid);
-            break;
-        case 'PUT':
-            var_dump(findUUIDGroup($_GET['uuid']));
             break;
         default:
             // Invalid Request Method

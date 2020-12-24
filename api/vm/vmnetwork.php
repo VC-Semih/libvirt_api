@@ -1,5 +1,10 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
+/**
+ * Returns a json response, displays the network information of the given domain uuid.
+ * @param $uuid
+ * @api
+ */
 function getVMNetwork($uuid)
 {
     global $lv;

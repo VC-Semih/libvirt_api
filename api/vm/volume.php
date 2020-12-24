@@ -1,8 +1,10 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
-error_reporting(E_ALL);
-ini_set('display_errors', TRUE);
-ini_set('display_startup_errors', TRUE);
+/**
+ * Returns a json response containing the volumes of the given pool name.
+ * @param $pool
+ * @api
+ */
 function getVolumes($pool)
 {
     global $lv;
@@ -39,6 +41,12 @@ function getVolumes($pool)
     echo json_encode($myJson, JSON_PRETTY_PRINT);
 }
 
+/**
+ * Deletes a volume inside the image folder by name.
+ * Returns a json response.
+ * @api
+ * @param $name
+ */
 function deleteVolume($name)
 {
     global $lv;
@@ -51,6 +59,13 @@ function deleteVolume($name)
     }
 }
 
+/**
+ * Uploads a volume by chunk each chunk is added to the file, the client defines the chunk size.
+ * It creates a .part and each time this function is called, a chunk is added to the file.
+ * Uploads the file in the images folder of libvirt.
+ * Returns a json response.
+ * @api
+ */
 function uploadVolume()
 {
     global $lv;
@@ -101,6 +116,16 @@ function uploadVolume()
     }
 }
 
+/**
+ * Clones a volume, with volume_name as the volume being cloned.
+ * Parameter template_name is optional, used in case a template wants to clone its disk.
+ * Returns a json response if template_name is empty, else it returns true on success or nothing (because the script die on error).
+ * @api
+ * @param $template_name
+ * @param $volume_name
+ * @param $new_volume_name
+ * @return bool
+ */
 function cloneVolume($template_name, $volume_name, $new_volume_name)
 {
     global $lv;
@@ -135,10 +160,10 @@ function cloneVolume($template_name, $volume_name, $new_volume_name)
             $read_bytes += 16384;
 
             //Use $filesize as calculated earlier to get the progress percentage
-            $progress = round(min(100, 100 * $read_bytes / filesize($originFilePath . $volume_name)));
+            $progress = round(min(100, 100 * $read_bytes / filesize($originFilePath . $volume_name))); // progress in percentage
             if ($progress != $previousprogress) {
                 $text = $progress . '%' . PHP_EOL;
-                fwrite($progresstracker, $text);
+                fwrite($progresstracker, $text); // Writing advancement of cloning inside a file so it can be readed by getVolumeProgress.
                 $previousprogress = $progress;
             }
         }
@@ -161,13 +186,19 @@ function cloneVolume($template_name, $volume_name, $new_volume_name)
     return true;
 }
 
+/**
+ * Reads the advancement tracking file to get the volume copy progress.
+ * Returns the percentage of the copy.
+ * @api
+ * @param $filename
+ */
 function getVolumeProgress($filename)
 {
-    $logFilePath = dirname(__FILE__) . "/../../";
+    $logFilePath = dirname(__FILE__) . "/../../"; //
     $line = '';
     $f = fopen($logFilePath . $filename, 'r') or verbose(0, 'Error while opening file');
     $cursor = -1;
-    fseek($f, $cursor, SEEK_END);
+    fseek($f, $cursor, SEEK_END); // Reading only the last line (where the last percentage is)
     $char = fgetc($f);
     //Trim trailing newline characters in the file
     while ($char === "\n" || $char === "\r") {
@@ -182,7 +213,6 @@ function getVolumeProgress($filename)
         $char = fgetc($f);
     }
     verbose(1, $line);
-
 }
 if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the link corresponds to the file (and not another api that made require() )
     $request_method = $_SERVER['REQUEST_METHOD'];

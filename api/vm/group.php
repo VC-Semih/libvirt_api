@@ -1,7 +1,11 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
 $group_dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'groups' . DIRECTORY_SEPARATOR;
-
+/**
+ * Returns group names or an error code if there isn't any group.
+ * @return array|false
+ * @api
+ */
 function getGroups()
 {
     $myJson = array();
@@ -19,6 +23,11 @@ function getGroups()
     return false;
 }
 
+/**
+ * Changes the name of a group defined by param, the new name is passed by x-www-form-urlencoded as `new_name`
+ * @api
+ * @param $old_name
+ */
 function changeGroupName($old_name)
 {
     $_PUT = array();
@@ -59,6 +68,10 @@ function changeGroupName($old_name)
 
 }
 
+/**
+ * Adds a group with a post named `group_name`
+ * @api
+ */
 function addGroup()
 {
     $regex = '/^[a-zA-Z0-9]+$/m'; //regex, only chars and numbers
@@ -87,6 +100,10 @@ function addGroup()
     }
 }
 
+/**
+ * Deletes a group with group name.
+ * @param $group_name
+ */
 function deleteGroup($group_name){
     global $group_dir;
     $filename = $group_dir.$group_name.'.json';
@@ -107,11 +124,9 @@ if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) { // Check if the lin
     addCors();
     switch ($request_method) {
         case 'GET':
-            // Retrive VM state
             getGroups();
             break;
         case 'PUT':
-            // Modify VM State
             $old_name = $_GET["old_name"];
             changeGroupName($old_name);
             break;

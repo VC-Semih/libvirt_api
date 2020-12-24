@@ -1,5 +1,9 @@
 <?php
 require_once(dirname(__FILE__) . "/../libconnect.php");
+/**
+ * Returns a json response with all networks details
+ * @api
+ */
 function getAllNetworks()
 {
     global $lv;
@@ -18,6 +22,11 @@ function getAllNetworks()
     echo json_encode($myJson, JSON_PRETTY_PRINT);
 }
 
+/**
+ * Returns array about network information, param takes an array of network names
+ * @param $networks_array
+ * @return array
+ */
 function getNetworkInformations($networks_array)
 {
     global $lv;
@@ -51,6 +60,11 @@ function getNetworkInformations($networks_array)
     return $arr;
 }
 
+/**
+ * Returns a json response with given network name details
+ * @param $network_name
+ * @api
+ */
 function getNetwork($network_name){
     global $lv;
     $myJson = null;
@@ -68,6 +82,13 @@ function getNetwork($network_name){
     echo json_encode($myJson, JSON_PRETTY_PRINT);
 }
 
+/**
+ * Starts or stops a network the param action is passed by x-www-form-urlencoded as `action`.
+ * Action value can only be network-start or network-stop.
+ * Returns a json response
+ * @api
+ * @param $network_name
+ */
 function changeNetworkState($network_name)
 {
     global $lv;
@@ -87,6 +108,11 @@ function changeNetworkState($network_name)
     }
 }
 
+/**
+ * Returns a xml configuration string of the given network name or a json error code is network is not found
+ * @api
+ * @param $network_name
+ */
 function getNetworkConfiguration($network_name)
 {
     global $lv;
@@ -98,6 +124,13 @@ function getNetworkConfiguration($network_name)
     }
 }
 
+/**
+ * Changes the xml configuration of the given network name.
+ * Xml configuration passes with x-www-form-urlencoded as `xml`.
+ * Returns a json response.
+ * @api
+ * @param $network_name
+ */
 function changeNetworkConfiguration($network_name)
 {
     global $lv;
