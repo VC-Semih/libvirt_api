@@ -1,4 +1,8 @@
 <?php
+/*
+ * CIFTCI Semih Copyright (c) 2020. All rights reserved.
+ */
+
 require_once(dirname(__FILE__) . "/../libconnect.php");
 /**
  * Returns json response with all domains and their information
@@ -113,7 +117,7 @@ function getVM($uuid)
 function addVM($vmname, $ram, $disk, $cpucores)
 {
     global $lv;
-    if (!empty($vmname)) {
+    if (empty($vmname)) {
         verbose(0, 'The virtual machine name can\'t be empty !');
     }
     if ($lv->get_domain_by_name($vmname)) {

@@ -1,4 +1,8 @@
 <?php
+/*
+ * CIFTCI Semih Copyright (c) 2020. All rights reserved.
+ */
+
 require_once(dirname(__FILE__) . "/../libconnect.php");
 /**
  * Returns a json response of the state of the given domain uuid (running, shutoff etc...).

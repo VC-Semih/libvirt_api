@@ -1,4 +1,8 @@
 <?php
+/*
+ * CIFTCI Semih Copyright (c) 2020. All rights reserved.
+ */
+
 require_once(dirname(__FILE__) . "/../libconnect.php");
 $group_dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'groups' . DIRECTORY_SEPARATOR;
 /**
